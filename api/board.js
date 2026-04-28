@@ -1,29 +1,53 @@
 import { Redis } from "@upstash/redis";
+import { createClient } from "redis";
 
 const BOARD_KEY = "coffee-daily-board";
+let redisUrlClient;
 
-function getRedis() {
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    return null;
+async function getStore() {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    const redis = Redis.fromEnv();
+    return {
+      get: (key) => redis.get(key),
+      set: (key, value) => redis.set(key, value)
+    };
   }
 
-  return Redis.fromEnv();
+  if (process.env.REDIS_URL) {
+    if (!redisUrlClient) {
+      redisUrlClient = createClient({ url: process.env.REDIS_URL });
+      redisUrlClient.on("error", (error) => console.error("Redis error", error));
+      await redisUrlClient.connect();
+    } else if (!redisUrlClient.isOpen) {
+      await redisUrlClient.connect();
+    }
+
+    return {
+      get: async (key) => {
+        const value = await redisUrlClient.get(key);
+        return value ? JSON.parse(value) : null;
+      },
+      set: (key, value) => redisUrlClient.set(key, JSON.stringify(value))
+    };
+  }
+
+  return null;
 }
 
-async function readBoard(redis) {
-  return (await redis.get(BOARD_KEY)) ?? {};
+async function readBoard(store) {
+  return (await store.get(BOARD_KEY)) ?? {};
 }
 
 export default async function handler(request, response) {
-  const redis = getRedis();
+  const store = await getStore();
 
-  if (!redis) {
+  if (!store) {
     response.status(503).json({ error: "Redis is not configured" });
     return;
   }
 
   if (request.method === "GET") {
-    const board = await readBoard(redis);
+    const board = await readBoard(store);
     response.status(200).json(board);
     return;
   }
@@ -41,7 +65,7 @@ export default async function handler(request, response) {
     return;
   }
 
-  const board = await readBoard(redis);
+  const board = await readBoard(store);
   const currentDay = board[selectedKey] ?? {};
 
   if (person) {
@@ -72,6 +96,6 @@ export default async function handler(request, response) {
     };
   }
 
-  await redis.set(BOARD_KEY, board);
+  await store.set(BOARD_KEY, board);
   response.status(200).json(board);
 }

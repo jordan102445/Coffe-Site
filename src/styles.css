@@ -506,8 +506,18 @@ h2 {
   .status-strip,
   .clock-card,
   .day-tabs button {
-    background-color: rgba(246, 241, 232, 0.72);
-    backdrop-filter: blur(8px);
+    background-color: rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(3px);
+  }
+
+  .table-panel,
+  .admin-panel {
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.12);
+  }
+
+  .person-row {
+    background: rgba(255, 255, 255, 0.08);
+    border-top-color: rgba(255, 255, 255, 0.18);
   }
 
   .person-row {
@@ -524,8 +534,8 @@ h2 {
   }
 
   .check-cell {
-    background: rgba(255, 255, 255, 0.58);
-    border-color: rgba(255, 255, 255, 0.62);
+    background: rgba(255, 255, 255, 0.42);
+    border-color: rgba(255, 255, 255, 0.72);
     justify-content: center;
     min-height: 44px;
     padding: 8px 10px;
@@ -538,8 +548,8 @@ h2 {
 
   .person-row input[type="text"],
   .admin-login input {
-    background: rgba(255, 255, 255, 0.64);
-    border-color: rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.44);
+    border-color: rgba(255, 255, 255, 0.72);
     color: #1d1d1f;
     grid-column: 1 / -1;
     min-height: 44px;

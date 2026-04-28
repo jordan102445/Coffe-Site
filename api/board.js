@@ -58,7 +58,7 @@ export default async function handler(request, response) {
     return;
   }
 
-  const { selectedKey, person, response: personResponse, result } = request.body ?? {};
+  const { selectedKey, person, response: personResponse, result, action } = request.body ?? {};
 
   if (!selectedKey || (!person && !result)) {
     response.status(400).json({ error: "Missing selectedKey or payload" });
@@ -69,23 +69,26 @@ export default async function handler(request, response) {
   const currentDay = board[selectedKey] ?? {};
 
   if (person) {
-    const currentResponse = currentDay.responses?.[person];
+    if (action === "delete") {
+      const nextResponses = { ...currentDay.responses };
+      delete nextResponses[person];
 
-    if (currentResponse?.saved) {
-      response.status(409).json({ error: "Response is already saved" });
-      return;
-    }
-
-    board[selectedKey] = {
-      ...currentDay,
-      responses: {
-        ...currentDay.responses,
-        [person]: {
-          ...personResponse,
-          saved: true
+      board[selectedKey] = {
+        ...currentDay,
+        responses: nextResponses
+      };
+    } else {
+      board[selectedKey] = {
+        ...currentDay,
+        responses: {
+          ...currentDay.responses,
+          [person]: {
+            ...personResponse,
+            saved: true
+          }
         }
-      }
-    };
+      };
+    }
   }
 
   if (result) {

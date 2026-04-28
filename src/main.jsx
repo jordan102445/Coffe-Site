@@ -163,6 +163,54 @@ function App() {
     }));
   }
 
+  function editPerson(person) {
+    setBoard((current) => ({
+      ...current,
+      [selectedKey]: {
+        ...current[selectedKey],
+        responses: {
+          ...createBlankResponses(),
+          ...current[selectedKey]?.responses,
+          [person]: {
+            ...createBlankResponses()[person],
+            ...current[selectedKey]?.responses?.[person],
+            saved: false
+          }
+        }
+      }
+    }));
+  }
+
+  async function deletePerson(person) {
+    setBoard((current) => {
+      const nextResponses = {
+        ...createBlankResponses(),
+        ...current[selectedKey]?.responses
+      };
+      nextResponses[person] = createBlankResponses()[person];
+
+      return {
+        ...current,
+        [selectedKey]: {
+          ...current[selectedKey],
+          responses: nextResponses
+        }
+      };
+    });
+
+    try {
+      const apiResponse = await fetch("/api/board", {
+        body: JSON.stringify({ selectedKey, person, action: "delete" }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST"
+      });
+
+      if (apiResponse.ok) {
+        setBoard(await apiResponse.json());
+      }
+    } catch {}
+  }
+
   async function savePerson(person) {
     const personResponse = {
       ...createBlankResponses()[person],
@@ -181,11 +229,6 @@ function App() {
 
       if (apiResponse.ok) {
         setBoard(await apiResponse.json());
-      } else if (apiResponse.status === 409) {
-        const latestResponse = await fetch("/api/board");
-        if (latestResponse.ok) {
-          setBoard(await latestResponse.json());
-        }
       }
     } catch {}
   }
@@ -325,14 +368,22 @@ function App() {
                   type="text"
                   value={response.arrival}
                 />
-                <button
-                  className="save-response"
-                  disabled={response.saved}
-                  onClick={() => savePerson(person)}
-                  type="button"
-                >
-                  {response.saved ? "Зачувано" : "Зачувај"}
-                </button>
+                <div className="response-actions">
+                  {response.saved ? (
+                    <>
+                      <button className="save-response" onClick={() => editPerson(person)} type="button">
+                        Измени
+                      </button>
+                      <button className="delete-response" onClick={() => deletePerson(person)} type="button">
+                        Избриши
+                      </button>
+                    </>
+                  ) : (
+                    <button className="save-response" onClick={() => savePerson(person)} type="button">
+                      Зачувај
+                    </button>
+                  )}
+                </div>
               </article>
             );
           })}

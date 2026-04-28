@@ -12,7 +12,9 @@ const PEOPLE = [
   "Valerija Tomeva",
   "Jasna Kuzmanovksa",
   "Despina Trajkova",
-  "Jordan Trajkov"
+  "Jordan Trajkov",
+  "Bojan Kocev",
+  "Viktorija Davceva"
 ];
 
 const FALLBACK_PLACES = [
@@ -220,7 +222,7 @@ function App() {
                     onChange={(event) => updatePerson(person, "awake", event.target.checked)}
                     type="checkbox"
                   />
-                  <span>Да</span>
+                  <span>Станат</span>
                 </label>
                 <label className="check-cell">
                   <input
@@ -228,7 +230,7 @@ function App() {
                     onChange={(event) => updatePerson(person, "coffee", event.target.checked)}
                     type="checkbox"
                   />
-                  <span>Да</span>
+                  <span>Кафе</span>
                 </label>
                 <input
                   aria-label={`${person} кафич`}

@@ -10,9 +10,18 @@
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 button,
@@ -340,7 +349,9 @@ h2 {
 
 @media (max-width: 920px) {
   .app-shell {
-    padding: 18px;
+    background-attachment: scroll;
+    background-position: center top;
+    padding: 18px 14px calc(96px + env(safe-area-inset-bottom));
   }
 
   .topbar,
@@ -359,20 +370,41 @@ h2 {
   }
 
   .day-tabs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    gap: 8px;
+    margin: 18px -14px 14px;
+    max-width: none;
+    overflow-x: auto;
+    padding: 0 14px 4px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .day-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .day-tabs button {
+    flex: 0 0 132px;
+    min-height: 56px;
+    padding: 10px 12px;
+    scroll-snap-align: start;
   }
 
   .status-strip {
-    grid-template-columns: 1fr;
+    gap: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 10px;
   }
 
   .status-strip div {
-    border-bottom: 1px solid rgba(64, 50, 42, 0.14);
-    border-right: 0;
+    border-bottom: 0;
+    border-right: 1px solid rgba(64, 50, 42, 0.14);
+    padding: 4px 8px;
   }
 
   .status-strip div:last-child {
-    border-bottom: 0;
+    border-right: 0;
   }
 
   .admin-panel {
@@ -385,6 +417,7 @@ h2 {
 
   .person-row {
     grid-template-columns: 1fr 1fr;
+    padding: 16px 14px;
   }
 
   .person-row strong,
@@ -394,13 +427,111 @@ h2 {
 }
 
 @media (max-width: 520px) {
-  .day-tabs,
   .person-row,
   .admin-login {
     grid-template-columns: 1fr;
   }
 
+  .app-shell {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .topbar {
+    gap: 14px;
+  }
+
+  .eyebrow {
+    font-size: 0.72rem;
+  }
+
   h1 {
-    font-size: 2.45rem;
+    font-size: clamp(2.35rem, 13vw, 3.35rem);
+    line-height: 1;
+    max-width: 8ch;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  .clock-card {
+    min-height: 112px;
+    padding: 16px;
+  }
+
+  .clock-card span {
+    font-size: 1.08rem;
+  }
+
+  .clock-card strong {
+    font-size: clamp(2.25rem, 12vw, 3.2rem);
+  }
+
+  .day-tabs {
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .day-tabs button {
+    flex-basis: 118px;
+  }
+
+  .day-tabs span {
+    font-size: 0.94rem;
+    font-weight: 800;
+    opacity: 0.86;
+  }
+
+  .status-strip {
+    margin-top: 12px;
+  }
+
+  .status-strip span {
+    font-size: 0.66rem;
+  }
+
+  .status-strip strong {
+    font-size: 0.98rem;
+  }
+
+  .workspace {
+    gap: 14px;
+    margin-top: 14px;
+  }
+
+  .table-panel,
+  .admin-panel,
+  .status-strip,
+  .clock-card,
+  .day-tabs button {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .person-row {
+    gap: 9px;
+  }
+
+  .person-row strong {
+    color: #1d1d1f;
+    font-size: 1.08rem;
+    margin-bottom: 4px;
+  }
+
+  .check-cell {
+    justify-content: flex-start;
+    min-height: 48px;
+    padding: 10px 12px;
+  }
+
+  .person-row input[type="text"],
+  .admin-login input {
+    min-height: 48px;
+  }
+
+  .admin-panel {
+    padding: 16px;
   }
 }

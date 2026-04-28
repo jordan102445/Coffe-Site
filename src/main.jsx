@@ -41,15 +41,15 @@ function formatDay(date) {
   return DAY_NAMES[date.getDay()];
 }
 
-function getNextWorkDays(count = 5) {
+function getCurrentWorkWeekDays() {
   const days = [];
   const cursor = new Date();
   cursor.setHours(0, 0, 0, 0);
+  const dayOffsetFromMonday = (cursor.getDay() + 6) % 7;
+  cursor.setDate(cursor.getDate() - dayOffsetFromMonday);
 
-  while (days.length < count) {
-    if (WORK_DAYS.includes(cursor.getDay())) {
-      days.push(new Date(cursor));
-    }
+  for (let index = 0; index < WORK_DAYS.length; index += 1) {
+    days.push(new Date(cursor));
     cursor.setDate(cursor.getDate() + 1);
   }
 
@@ -78,8 +78,11 @@ function loadBoard() {
 }
 
 function App() {
-  const days = useMemo(() => getNextWorkDays(5), []);
-  const [selectedKey, setSelectedKey] = useState(toDateKey(days[0]));
+  const days = useMemo(() => getCurrentWorkWeekDays(), []);
+  const [selectedKey, setSelectedKey] = useState(() => {
+    const todayKey = toDateKey(new Date());
+    return days.some((day) => toDateKey(day) === todayKey) ? todayKey : toDateKey(days[0]);
+  });
   const [board, setBoard] = useState(loadBoard);
   const [now, setNow] = useState(new Date());
   const [pin, setPin] = useState("");

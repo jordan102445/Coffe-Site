@@ -64,7 +64,8 @@ function createBlankResponses() {
       awake: false,
       coffee: false,
       place: "",
-      arrival: ""
+      arrival: "",
+      saved: false
     };
     return acc;
   }, {});
@@ -89,6 +90,21 @@ function App() {
   const [now, setNow] = useState(new Date());
   const [pin, setPin] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch("/api/board", { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((remoteBoard) => {
+        if (remoteBoard) {
+          setBoard(remoteBoard);
+        }
+      })
+      .catch(() => {});
+
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("coffee-daily-board", JSON.stringify(board));
@@ -122,11 +138,56 @@ function App() {
           [person]: {
             ...createBlankResponses()[person],
             ...current[selectedKey]?.responses?.[person],
-            [field]: value
+            ...(!current[selectedKey]?.responses?.[person]?.saved ? { [field]: value } : {})
           }
         }
       }
     }));
+  }
+
+  function savePersonLocally(person) {
+    setBoard((current) => ({
+      ...current,
+      [selectedKey]: {
+        ...current[selectedKey],
+        responses: {
+          ...createBlankResponses(),
+          ...current[selectedKey]?.responses,
+          [person]: {
+            ...createBlankResponses()[person],
+            ...current[selectedKey]?.responses?.[person],
+            saved: true
+          }
+        }
+      }
+    }));
+  }
+
+  async function savePerson(person) {
+    const personResponse = {
+      ...createBlankResponses()[person],
+      ...responses[person],
+      saved: true
+    };
+
+    savePersonLocally(person);
+
+    try {
+      const apiResponse = await fetch("/api/board", {
+        body: JSON.stringify({ selectedKey, person, response: personResponse }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST"
+      });
+
+      if (apiResponse.ok) {
+        setBoard(await apiResponse.json());
+      } else if (apiResponse.status === 409) {
+        const latestResponse = await fetch("/api/board");
+        if (latestResponse.ok) {
+          setBoard(await latestResponse.json());
+        }
+      }
+    } catch {}
   }
 
   function unlockAdmin(event) {
@@ -134,7 +195,7 @@ function App() {
     setIsAdmin(pin === ADMIN_PIN);
   }
 
-  function generateCoffeePlan() {
+  async function generateCoffeePlan() {
     if (!canGenerate) return;
 
     const suggestedPlaces = coffeePeople
@@ -143,18 +204,31 @@ function App() {
     const pool = suggestedPlaces.length ? suggestedPlaces : FALLBACK_PLACES;
     const place = pool[Math.floor(Math.random() * pool.length)];
     const people = coffeePeople.map(([name]) => name);
+    const nextResult = {
+      place,
+      people,
+      generatedAt: new Date().toISOString()
+    };
 
     setBoard((current) => ({
       ...current,
       [selectedKey]: {
         ...current[selectedKey],
-        result: {
-          place,
-          people,
-          generatedAt: new Date().toISOString()
-        }
+        result: nextResult
       }
     }));
+
+    try {
+      const apiResponse = await fetch("/api/board", {
+        body: JSON.stringify({ selectedKey, result: nextResult }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST"
+      });
+
+      if (apiResponse.ok) {
+        setBoard(await apiResponse.json());
+      }
+    } catch {}
   }
 
   return (
@@ -209,6 +283,7 @@ function App() {
             <span>За кафе</span>
             <span>Кафич</span>
             <span>Кога стига</span>
+            <span>Статус</span>
           </div>
 
           {PEOPLE.map((person) => {
@@ -219,6 +294,7 @@ function App() {
                 <label className="check-cell">
                   <input
                     checked={response.awake}
+                    disabled={response.saved}
                     onChange={(event) => updatePerson(person, "awake", event.target.checked)}
                     type="checkbox"
                   />
@@ -227,6 +303,7 @@ function App() {
                 <label className="check-cell">
                   <input
                     checked={response.coffee}
+                    disabled={response.saved}
                     onChange={(event) => updatePerson(person, "coffee", event.target.checked)}
                     type="checkbox"
                   />
@@ -234,6 +311,7 @@ function App() {
                 </label>
                 <input
                   aria-label={`${person} кафич`}
+                  disabled={response.saved}
                   onChange={(event) => updatePerson(person, "place", event.target.value)}
                   placeholder="предлог кафич"
                   type="text"
@@ -241,11 +319,20 @@ function App() {
                 />
                 <input
                   aria-label={`${person} време`}
+                  disabled={response.saved}
                   onChange={(event) => updatePerson(person, "arrival", event.target.value)}
                   placeholder="пример 12:05"
                   type="text"
                   value={response.arrival}
                 />
+                <button
+                  className="save-response"
+                  disabled={response.saved}
+                  onClick={() => savePerson(person)}
+                  type="button"
+                >
+                  {response.saved ? "Зачувано" : "Зачувај"}
+                </button>
               </article>
             );
           })}

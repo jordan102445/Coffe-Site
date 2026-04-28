@@ -208,7 +208,7 @@ h2 {
 .person-row {
   display: grid;
   gap: 10px;
-  grid-template-columns: minmax(180px, 1.2fr) 94px 94px minmax(130px, 1fr) minmax(120px, 0.8fr);
+  grid-template-columns: minmax(180px, 1.2fr) 94px 94px minmax(130px, 1fr) minmax(120px, 0.8fr) 110px;
   padding: 12px 14px;
 }
 
@@ -241,6 +241,27 @@ h2 {
   min-width: 0;
   padding: 10px 12px;
   width: 100%;
+}
+
+.person-row input:disabled,
+.check-cell:has(input:disabled) {
+  opacity: 0.68;
+}
+
+.save-response {
+  align-self: stretch;
+  background: #47685a;
+  border: 0;
+  border-radius: 8px;
+  color: white;
+  font-weight: 900;
+  min-height: 42px;
+  padding: 8px 10px;
+}
+
+.save-response:disabled {
+  background: rgba(29, 29, 31, 0.74);
+  color: white;
 }
 
 .check-cell {
@@ -421,7 +442,8 @@ h2 {
   }
 
   .person-row strong,
-  .person-row input[type="text"] {
+  .person-row input[type="text"],
+  .save-response {
     grid-column: 1 / -1;
   }
 }
@@ -553,6 +575,10 @@ h2 {
     color: #1d1d1f;
     grid-column: 1 / -1;
     min-height: 44px;
+  }
+
+  .save-response {
+    min-height: 46px;
   }
 
   .person-row input::placeholder,

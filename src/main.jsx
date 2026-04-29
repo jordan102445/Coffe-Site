@@ -118,10 +118,7 @@ function App() {
   const selectedDay = days.find((day) => toDateKey(day) === selectedKey) ?? days[0];
   const responses = board[selectedKey]?.responses ?? createBlankResponses();
   const result = board[selectedKey]?.result;
-  const selectedIsToday = selectedKey === toDateKey(now);
-  const isWorkday = WORK_DAYS.includes(now.getDay());
-  const isNoonOrLater = now.getHours() > 12 || (now.getHours() === 12 && now.getMinutes() >= 0);
-  const canGenerate = isAdmin && selectedIsToday && isWorkday && isNoonOrLater;
+  const canGenerate = isAdmin;
 
   const awakeCount = Object.values(responses).filter((person) => person.awake).length;
   const coffeePeople = Object.entries(responses).filter(([, response]) => response.coffee);
@@ -416,7 +413,7 @@ function App() {
           </button>
 
           <p className="hint">
-            Копчето се активира само за админ, за денешниот работен ден, после 12:00.
+            Копчето се активира кога ќе го внесеш админ PIN-от.
           </p>
 
           {result ? (
